@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#111722" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Mechyard" />
+  <title>Mechyard Sandbox</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.png" />
+  <link rel="apple-touch-icon" href="icon.png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="topbar glass">
+      <button class="brand" id="brandButton" aria-label="Home">
+        <span class="brandMark">M</span>
+        <span class="brandText"><strong>MECHYARD</strong><small>PHYSICS SANDBOX</small></span>
+      </button>
+      <div class="statusPills">
+        <div class="pill"><span>FPS</span><b id="fpsText">60</b></div>
+        <div class="pill"><span>OBJECTS</span><b id="objectCount">0</b></div>
+        <div class="pill desktopOnly"><span>GRAVITY</span><b id="gravityLabel">1.00x</b></div>
+      </div>
+      <div class="topActions">
+        <button class="iconBtn textIcon" id="undoButton" title="Undo">UNDO</button>
+        <button class="iconBtn textIcon" id="redoButton" title="Redo">REDO</button>
+        <button class="iconBtn textIcon" id="pauseButton" title="Pause physics">PAUSE</button>
+        <button class="iconBtn textIcon" id="settingsButton" title="Settings">SET</button>
+      </div>
+    </header>
+
+    <main id="stageWrap">
+      <canvas id="world"></canvas>
+      <div id="toastLayer"></div>
+      <div id="crosshair" class="hidden"></div>
+      <div id="selectionHud" class="hidden glass">
+        <b id="selectionName">Part</b>
+        <span id="selectionInfo">0 kg</span>
+        <div class="row">
+          <button id="selFreeze">Freeze</button>
+          <button id="selDuplicate">Duplicate</button>
+          <button id="selDelete" class="danger">Delete</button>
+        </div>
+      </div>
+      <div id="hint" class="glass">Select a part from the build tray, then tap the world to place it.</div>
+    </main>
+
+    <aside id="toolRail" class="glass">
+      <button data-tool="select" class="tool active"><span>SEL</span><small>Select</small></button>
+      <button data-tool="freeze" class="tool"><span>FRZ</span><small>Freeze</small></button>
+      <button data-tool="hinge" class="tool"><span>HNG</span><small>Hinge</small></button>
+      <button data-tool="weld" class="tool"><span>WLD</span><small>Weld</small></button>
+      <button data-tool="fixedrope" class="tool"><span>FIX</span><small>Fixed Rope</small></button>
+      <button data-tool="slider" class="tool"><span>SLD</span><small>Slider</small></button>
+      <button data-tool="rope" class="tool"><span>RPE</span><small>Rope</small></button>
+      <button data-tool="steelrope" class="tool"><span>STL</span><small>Steel</small></button>
+      <button data-tool="spring" class="tool"><span>SPR</span><small>Spring</small></button>
+      <button data-tool="wire" class="tool"><span>ACT</span><small>Activation</small></button>
+      <button data-tool="nocollide" class="tool"><span>NCL</span><small>No Collide</small></button>
+      <button data-tool="delete" class="tool"><span>DEL</span><small>Delete</small></button>
+    </aside>
+
+    <section id="buildPanel" class="panel glass open">
+      <div class="panelGrab"></div>
+      <div class="categoryTabs" id="categoryTabs">
+        <button class="active" data-category="structure">Structure</button>
+        <button data-category="motion">Motion</button>
+        <button data-category="logic">Logic</button>
+        <button data-category="utility">Utility</button>
+        <button data-category="characters">Characters</button>
+        <button data-category="mods">Mods</button>
+      </div>
+      <div id="itemGrid" class="itemGrid"></div>
+      <div class="panelFooter">
+        <button id="saveButton">Save Build</button>
+        <button id="loadButton">Load Build</button>
+        <button id="exportButton">Export</button>
+        <button id="importButton">Import</button>
+        <input id="importFile" type="file" accept="application/json,.json" hidden />
+      </div>
+    </section>
+
+    <button id="panelToggle" class="floating glass textIcon" aria-label="Toggle build tray">UP</button>
+
+    <section id="settingsPanel" class="modal hidden">
+      <div class="modalCard glass">
+        <div class="modalHead"><h2>Sandbox Settings</h2><button data-close="settingsPanel">X</button></div>
+        <div class="settingRow"><label>Gravity <span id="gravityValue">1.00</span>x</label><input id="gravitySlider" type="range" min="-1" max="2" value="1" step="0.05" /></div>
+        <div class="settingRow"><label>Time Scale <span id="timeValue">1.00</span>x</label><input id="timeSlider" type="range" min="0.1" max="2" value="1" step="0.05" /></div>
+        <div class="settingRow split"><label>Show joints</label><input id="jointToggle" type="checkbox" checked /></div>
+        <div class="settingRow split"><label>Show colliders</label><input id="colliderToggle" type="checkbox" checked /></div>
+        <div class="settingRow split"><label>Grid snap</label><input id="snapToggle" type="checkbox" /></div>
+        <div class="settingRow split"><label>Music</label><input id="musicToggle" type="checkbox" /></div>
+        <div class="settingRow split"><label>Sound effects</label><input id="sfxToggle" type="checkbox" checked /></div>
+        <div class="settingRow"><label>Map</label><select id="mapSelect"><option value="hangar">Hangar</option><option value="testlab">Test Lab</option><option value="void">Void</option></select></div>
+        <div class="modalButtons"><button id="clearWorld" class="danger">Clear World</button><button id="resetCamera">Reset Camera</button></div>
+      </div>
+    </section>
+
+    <section id="workshopPanel" class="modal hidden">
+      <div class="modalCard workshopCard glass">
+        <div class="modalHead"><div><h2>Workshop</h2><p>New community-style packs rotate locally every 3 hours.</p></div><button data-close="workshopPanel">X</button></div>
+        <div class="workshopBanner">
+          <div><span class="liveDot"></span> NEXT ROTATION</div><strong id="rotationTimer">--:--:--</strong>
+        </div>
+        <div id="workshopGrid" class="workshopGrid"></div>
+      </div>
+    </section>
+
+    <section id="modDetail" class="modal hidden">
+      <div class="modalCard glass detailCard">
+        <div class="modalHead"><div><h2 id="modTitle">Mod</h2><p id="modAuthor">Workshop</p></div><button data-close="modDetail">X</button></div>
+        <canvas id="modPreview" width="720" height="320"></canvas>
+        <p id="modDescription"></p>
+        <div id="modFeatures" class="featureChips"></div>
+        <button id="modInstallButton" class="primary">Install to Spawn Menu</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
